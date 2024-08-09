@@ -10,10 +10,8 @@ namespace PokemonReview.Helper
         public MappingProfiles()
         {
             CreateMap<Pokemon, PokemonDto>();
-<<<<<<< HEAD
             CreateMap<Category, CategoryDto>();
-=======
->>>>>>> master
+
         }
     }
 }
