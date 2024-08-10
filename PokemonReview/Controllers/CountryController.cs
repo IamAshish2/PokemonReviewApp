@@ -64,5 +64,31 @@ namespace PokemonReview.Controllers
         //}
 
 
+        [HttpPost]
+        [ProducesResponseType(402)]
+        [ProducesResponseType(502)]
+        public IActionResult CreateCountry(CountryDto countryDto)
+        {
+            if(countryDto == null) return BadRequest(ModelState);
+
+            var countries = _countryRepository.GetCountries().Where(C => C.Name.Trim().ToUpper() == countryDto.Name.Trim().ToUpper()).FirstOrDefault();
+            
+            if(countries != null)
+            {
+                ModelState.AddModelError("","Cannot create two countries with same name.");
+                return StatusCode(402,ModelState);
+            }
+
+            var countryMap = _mapper.Map<Country>(countryDto);
+            if (countryMap == null) return BadRequest(ModelState);
+
+            if (!_countryRepository.CreateCountry(countryMap))
+            {
+                ModelState.AddModelError("", "Unsuccessfull operation. Try again!");
+                return StatusCode(502, ModelState);
+            }
+            return Ok("Successfully Created Country.");
+        }
+
     }
 }
