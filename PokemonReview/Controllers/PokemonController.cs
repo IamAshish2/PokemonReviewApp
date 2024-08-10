@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using PokemonReview.Dtos;
 using PokemonReview.Interfaces;
 using PokemonReview.Models;
+using PokemonReview.Repository;
 using System.Collections.Generic;
 
 namespace PokemonReview.Controllers
@@ -80,6 +81,34 @@ namespace PokemonReview.Controllers
                 return BadRequest(ModelState);
 
             return Ok(pokemon);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateOwner([FromQuery] int ownerId,[FromQuery] int categoryId, [FromBody] PokemonDto pokemonDto)
+        {
+            if (pokemonDto == null) return BadRequest(ModelState);
+            var pokemon = _pokemonRepository.GetPokemons().Where(p => p.Name.Trim().ToUpper() == pokemonDto.Name.Trim().ToUpper()).FirstOrDefault();
+
+            if (pokemon != null)
+            {
+                ModelState.AddModelError("", "Pokemon already exists.");
+                return StatusCode(422, ModelState);
+            }
+
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var pokeMap = _mapper.Map<Pokemon>(pokemonDto);
+             //pokeMap.Reviews = _review.GetReviews(countryId);
+            if (!_pokemonRepository.CreatePokemon(ownerId, categoryId, pokeMap))
+            {
+                ModelState.AddModelError("", "Something went wrong.Please Try again later.");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created Pokemon.");
         }
 
     }
