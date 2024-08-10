@@ -16,7 +16,7 @@ namespace PokemonReview.Controllers
         private readonly IMapper _mapper;
         private readonly ICountryRepository _countryRepository;
 
-        public OwnerController(IOwnerRepository ownerRepository, IMapper mapper,ICountryRepository countryRepository)
+        public OwnerController(IOwnerRepository ownerRepository, IMapper mapper, ICountryRepository countryRepository)
         {
             _ownerRepository = ownerRepository;
             _mapper = mapper;
@@ -24,13 +24,14 @@ namespace PokemonReview.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200,Type = typeof(IEnumerable<Owner>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Owner>))]
         public IActionResult GetOwners()
         {
             var owners = _mapper.Map<List<OwnerDto>>(_ownerRepository.GetOwners());
-            if (!ModelState.IsValid) {
+            if (!ModelState.IsValid)
+            {
                 return NotFound();
-            }   
+            }
             return Ok(owners);
         }
 
@@ -43,12 +44,13 @@ namespace PokemonReview.Controllers
             {
                 return NotFound();
             }
-            return Ok(owner);   
+            return Ok(owner);
         }
 
         [HttpGet("pokemons/{pokeId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Owner>))]
-        public IActionResult GetOwnerOfPokemon(int pokeId) {
+        public IActionResult GetOwnerOfPokemon(int pokeId)
+        {
             var owners = _mapper.Map<List<OwnerDto>>(_ownerRepository.GetOwnerOfPokemon(pokeId));
             if (!ModelState.IsValid)
             {
@@ -56,14 +58,14 @@ namespace PokemonReview.Controllers
             }
 
             return Ok(owners);
-        }   
+        }
 
         [HttpGet("{ownerId}/pokemon")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
         public IActionResult GetPokemonsOfOwner(int ownerId)
         {
             var pokemons = _mapper.Map<List<PokemonDto>>(_ownerRepository.GetPokemonsOfOwner(ownerId));
-           if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -98,5 +100,35 @@ namespace PokemonReview.Controllers
 
             return Ok("Successfully created Owner.");
         }
-    }   
+
+        [HttpPut("{ownerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateOwner(int ownerId, [FromBody] OwnerDto ownerDto)
+        {
+            if (ownerDto == null)
+                return BadRequest("Owner data is null.");
+
+            if (ownerId != ownerDto.Id)
+                return BadRequest("ID mismatch.");
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_ownerRepository.OwnerExists(ownerId))
+                return NotFound("Owner not found.");
+
+            var updatedOwner = _mapper.Map<Owner>(ownerDto);
+
+            if (!_ownerRepository.UpdateOwner(updatedOwner))
+            {
+                ModelState.AddModelError("", "Unsuccessful operation. Try again!");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+    }
 }

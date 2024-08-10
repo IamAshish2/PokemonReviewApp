@@ -19,6 +19,12 @@ namespace PokemonReview.Repository
             return Save();
         }
 
+        public bool UpdateOwner(Owner owner)
+        {
+            _context.Update(owner);
+            return Save();
+        }
+
         public Owner GetOwner(int ownerId)
         {
             return _context.Owners.Where(o => o.Id == ownerId).FirstOrDefault();
@@ -31,23 +37,24 @@ namespace PokemonReview.Repository
 
         public ICollection<Owner> GetOwners()
         {
-           return _context.Owners.OrderBy(o => o.Id).ToList();  
+            return _context.Owners.OrderBy(o => o.Id).ToList();
         }
 
         public ICollection<Pokemon> GetPokemonsOfOwner(int OwnerId)
         {
-            return _context.PokemonOwners.Where(po => po.OwnerId == OwnerId).Select(o => o.Pokemon).ToList();   
+            return _context.PokemonOwners.Where(po => po.OwnerId == OwnerId).Select(o => o.Pokemon).ToList();
         }
 
         public bool OwnerExists(int ownerId)
         {
             return _context.Owners.Any(o => o.Id == ownerId);
         }
-
         public bool Save()
         {
-            var saved = _context.SaveChanges(); 
+            var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
         }
+
+
     }
 }
