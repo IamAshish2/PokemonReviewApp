@@ -13,11 +13,15 @@ namespace PokemonReview.Controllers
     {
         private readonly IReviewRepository _reviewRepository;
         private readonly IMapper _mapper;
+        private readonly IPokemonRepository _pokemonRepository;
+        private readonly IReviewerRepository _reviewerRepository;
 
-        public ReviewController(IReviewRepository reviewRepository,IMapper mapper)
+        public ReviewController(IReviewRepository reviewRepository,IMapper mapper,IPokemonRepository pokemonRepository,IReviewerRepository reviewerRepository)
         {
             _reviewRepository = reviewRepository;
             _mapper = mapper;
+            _pokemonRepository = pokemonRepository;
+            _reviewerRepository = reviewerRepository;
         }
 
         [HttpGet]
@@ -52,6 +56,31 @@ namespace PokemonReview.Controllers
             
             var reviewPoke = _mapper.Map<List<ReviewDto>>(_reviewRepository.GetReviewOfPokemon(pokeId));
             return Ok(reviewPoke);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(402)]
+        [ProducesResponseType(500)]
+        public IActionResult CreateReview([FromQuery] int pokemonId, [FromQuery] int reviewerId, [FromBody] ReviewDto reviewdto)
+        {
+            if(reviewdto == null) return BadRequest(ModelState);
+
+            var review = _reviewRepository.GetReviews().Where(r => r.Title == reviewdto.Title).FirstOrDefault();
+            if(review != null)
+            {
+                ModelState.AddModelError("", "The review already exists.");
+                return StatusCode(402,ModelState);
+            }
+
+            var newreview = _mapper.Map<Review>(reviewdto);
+            newreview.Pokemon = _pokemonRepository.GetPokemon(pokemonId);
+            newreview.Reviewer = _reviewerRepository.GetReviewer(reviewerId);
+            if (!_reviewRepository.CreateReview(newreview))
+            {
+                ModelState.AddModelError("","The model could not be created.");
+                return StatusCode(502,ModelState);
+            }
+            return Ok("Successfully created new review.");
         }
     }
 }
