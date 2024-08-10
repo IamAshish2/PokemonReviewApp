@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PokemonReview.Dtos;
 using PokemonReview.Interfaces;
 using PokemonReview.Models;
+using PokemonReview.Repository;
 
 namespace PokemonReview.Controllers
 {
@@ -13,11 +14,13 @@ namespace PokemonReview.Controllers
     {
         private readonly IOwnerRepository _ownerRepository;
         private readonly IMapper _mapper;
+        private readonly ICountryRepository _countryRepository;
 
-        public OwnerController(IOwnerRepository ownerRepository, IMapper mapper)
+        public OwnerController(IOwnerRepository ownerRepository, IMapper mapper,ICountryRepository countryRepository)
         {
             _ownerRepository = ownerRepository;
             _mapper = mapper;
+            _countryRepository = countryRepository;
         }
 
         [HttpGet]
@@ -65,6 +68,35 @@ namespace PokemonReview.Controllers
                 return BadRequest(ModelState);
             }
             return Ok(pokemons);
+        }
+
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateOwner([FromQuery] int countryId, [FromBody] OwnerDto ownerDto)
+        {
+            if (ownerDto == null) return BadRequest(ModelState);
+            var category = _ownerRepository.GetOwners().Where(c => c.Name.Trim().ToUpper() == ownerDto.Name.Trim().ToUpper()).FirstOrDefault();
+
+            if (category != null)
+            {
+                ModelState.AddModelError("", "Owner already exists.");
+                return StatusCode(422, ModelState);
+            }
+
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var ownerMap = _mapper.Map<Owner>(ownerDto);
+            ownerMap.Country = _countryRepository.GetCountry(countryId);
+            if (!_ownerRepository.CreateOwner(ownerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong.Please Try again later.");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created Owner.");
         }
     }   
 }
