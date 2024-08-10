@@ -8,7 +8,7 @@ using PokemonReview.Models;
 
 namespace PokemonReview.Repository
 {
-    public class PokemonRepository:IPokemonRepository
+    public class PokemonRepository : IPokemonRepository
     {
         private readonly DataContext _context;
 
@@ -75,6 +75,12 @@ namespace PokemonReview.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+            _context.Update(pokemon);
+            return Save();
         }
     }
 }
