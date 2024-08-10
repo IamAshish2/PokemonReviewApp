@@ -59,7 +59,7 @@ namespace PokemonReview.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateRepository([FromBody] CategoryDto categoryDto)
+        public IActionResult CreateCategory([FromBody] CategoryDto categoryDto)
         {
             if(categoryDto == null) return BadRequest(ModelState);
             var category = _categoryRepository.GetCategories().Where(c => c.Name.Trim().ToUpper() == categoryDto.Name.Trim().ToUpper()).FirstOrDefault();
