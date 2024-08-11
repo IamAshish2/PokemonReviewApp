@@ -130,5 +130,31 @@ namespace PokemonReview.Controllers
             return NoContent();
         }
 
+
+        [HttpDelete("{ownerId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int ownerId)
+        {
+            if (!_ownerRepository.OwnerExists(ownerId))
+            {
+                return NotFound();
+            }
+
+            var owner = _ownerRepository.GetOwner(ownerId);
+            if (owner == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_ownerRepository.DeleteOwner(owner))
+            {
+                ModelState.AddModelError("", "An error occurred while deleting the owner. Please try again later.");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Deleted Successfull.");
+        }
+
     }
 }

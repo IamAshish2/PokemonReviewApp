@@ -53,6 +53,12 @@ namespace PokemonReview.Repository
             return Save();
         }
 
+        public bool DeleteCountry(Country country)
+        {
+            _context.Remove(country);
+            return Save();
+        }
+
         //public ICollection<Owner> GetOwnersFromACountry(int countryId)
         //{
         //    return _context.Owners.Where(o => o.Country.Id == countryId).ToList();  

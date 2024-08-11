@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PokemonReview.Dtos;
 using PokemonReview.Interfaces;
 using PokemonReview.Models;
+using PokemonReview.Repository;
 
 namespace PokemonReview.Controllers
 {
@@ -103,6 +104,32 @@ namespace PokemonReview.Controllers
             }
 
             return NoContent();
+        }
+
+
+        [HttpDelete("{reviewerId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int reviewerId)
+        {
+            if (!_reviewerRepository.ReviewerExists(reviewerId))
+            {
+                return NotFound();
+            }
+
+            var reviewer = _reviewerRepository.GetReviewer(reviewerId);
+            if (reviewer == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_reviewerRepository.DeleteReviewer(reviewer))
+            {
+                ModelState.AddModelError("", "An error occurred while deleting the reviewer. Please try again later.");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Deleted Successfull.");
         }
 
     }

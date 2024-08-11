@@ -133,5 +133,31 @@ namespace PokemonReview.Controllers
             return NoContent();
         }
 
+
+        [HttpDelete("{pokeId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int pokeId)
+        {
+            if (!_pokemonRepository.PokemonExists(pokeId))
+            {
+                return NotFound();
+            }
+
+            var pokemon = _pokemonRepository.GetPokemon(pokeId);
+            if (pokemon == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_pokemonRepository.DeletePokemon(pokemon))
+            {
+                ModelState.AddModelError("", "An error occurred while deleting the pokemon. Please try again later.");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Deleted Successfull.");
+        }
+
     }
 }

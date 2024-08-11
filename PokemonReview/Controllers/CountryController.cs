@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PokemonReview.Dtos;
 using PokemonReview.Interfaces;
 using PokemonReview.Models;
+using PokemonReview.Repository;
 
 namespace PokemonReview.Controllers
 {
@@ -112,6 +113,32 @@ namespace PokemonReview.Controllers
                 return StatusCode(500, ModelState);
             }
             return Ok("success");
+        }
+
+
+        [HttpDelete("{countryId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int countryId)
+        {
+            if (!_countryRepository.CountryExists(countryId))
+            {
+                return NotFound();
+            }
+
+            var country = _countryRepository.GetCountry(countryId);
+            if (country == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_countryRepository.DeleteCountry(country))
+            {
+                ModelState.AddModelError("", "An error occurred while deleting the country. Please try again later.");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Deleted Successfull.");
         }
     }
 }
